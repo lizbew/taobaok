@@ -85,6 +85,8 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+COMMANDS_MODULE = 'taobaok.commands'
+
 MONGO_URI = 'mongodb://localhost:27017/'
 MONGO_DB = 'taobaok'
 
