@@ -34,7 +34,7 @@ class ProductSpider(scrapy.Spider):
         item['price'] = response.css('#J_StrPrice .tb-rmb-num').xpath('text()').extract()[0]
         item['outer_id'] = item['num_id'] = var_g_config['itemId']
         item['pic'] = idata_item['pic']
-        item['auction_images'] = '<>'.join(idata_item['auctionImages'])
+        item['auction_images'] = '^'.join(idata_item['auctionImages'])
         item['subtitle'] = get_contain_text(response.css('.tb-subtitle'))
         item['size_group_name'] = idata_item['sizeGroupName']
         item['attributes_list'] = '\n'.join(response.css('.attributes-list li').xpath('text()').extract())
@@ -65,8 +65,15 @@ class ProductSpider(scrapy.Spider):
             self.logger.error('HttpError on %s', response.url)
 
     def parse_product_description(self, response):
+        # Content-Type:text/plain; charset=GBK
+        # scrapy.http.TextResponse
         item = response.meta['item']
-        content = response.body
+        try:
+            # version 1.1
+            content = response.text  # response.body.decode(response.encoding)
+        except AttributeError:
+            # version 1.0.6
+            content = response.body_as_unicode()
         var_index = content.index('var desc=')
         if var_index > -1:
             content = content[var_index + 10:content.rindex("'")]
