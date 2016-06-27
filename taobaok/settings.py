@@ -62,7 +62,8 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, li
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'taobaok.pipelines.SaveMongodbPipeline': 300,
+    'taobaok.pipelines.SaveProductPipeline': 300,
+    'taobaok.pipelines.UpdateCrawlStatusPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
