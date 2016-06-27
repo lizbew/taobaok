@@ -5,21 +5,43 @@ import scrapy
 from scrapy.spidermiddlewares.httperror import HttpError
 from taobaok import jsutil
 from taobaok.items import ProductItem
+import pymongo
 
 
 def get_contain_text(selector):
-    return selector.xpath('text()').extract()[0]
+    text_list = selector.xpath('text()').extract()
+    if text_list:
+        return text_list[0]
+    return ''
 
 def parse_jsonp_data(text):
     t = text[text.index('(')+1 : text.rindex(')')]
     return json.loads(t)
 
+
 class ProductSpider(scrapy.Spider):
     name = "product"
     allowed_domains = ["taobao.com", "taobaocdn.com", "alicdn.com"]
-    start_urls = (
-        'https://item.taobao.com/item.htm?id=529332291181',
-    )
+    #start_urls = (
+    #    'https://item.taobao.com/item.htm?id=529332291181',
+    #)
+    
+    def query_new_crawl_uris(self):
+        client = pymongo.MongoClient(self.settings['MONGO_URI'])
+        db = client[self.settings['MONGO_DB']]
+        try:
+            cursor = db['crawl_uris'].find({'status': 'NEW'})
+            return [doc['detail_url'] for doc in cursor]
+        except Exception as ex:
+            self.logger.error('Query mongodb collection crawl_uris error %s', repr(ex))
+        finally:
+            client.close()
+
+    def start_requests(self):
+        detail_urls = self.query_new_crawl_uris()
+        if detail_urls:
+            for url in detail_urls:
+                yield self.make_requests_from_url(url)
 
     def parse(self, response):
         script_text = response.xpath('//head/script[1]/text()').extract()[0]
@@ -52,7 +74,8 @@ class ProductSpider(scrapy.Spider):
             data = parse_jsonp_data(response.body)['data']
             delivery_fee = data['deliveryFee']['data']['serviceInfo']['list'][0]
             item['delivery_fee_info'] = delivery_fee['info']
-            item['delivery_fee_markinfo'] = delivery_fee['markInfo']
+            if 'markInfo' in delivery_fee:
+                item['delivery_fee_markinfo'] = delivery_fee['markInfo']
             price = data['price']
             item['quantity'] = data['dynStock']['sellableQuantity']
             item['sku_props'] = ''.join(['%s:%s::%s' % (price, v['stock'], k[1:])  for k, v in data['dynStock']['sku'].items()])

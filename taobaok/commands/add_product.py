@@ -25,7 +25,7 @@ class Command(ScrapyCommand):
         self.exitcode = 1
 
     def run(self, args, opts):
-        if len(args) != 1 or not re.match('[0-9]+', args[0]):
+        if len(args) != 1 or not re.match('^[0-9]+$', args[0]):
             raise UsageError()
 
         client = pymongo.MongoClient(self.settings['MONGO_URI'])
