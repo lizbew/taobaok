@@ -28,13 +28,13 @@ class Command(ScrapyCommand):
         if len(args) != 1 or not re.match('[0-9]+', args[0]):
             raise UsageError()
 
-         client = pymongo.MongoClient(self.settings['MONGO_URI'])
-         db = self.client[self.settings['MONGO_DB']]
-         doc = {
-             'num_id': args[0],
-             'detail_url': 'https://item.taobao.com/item.htm?id=%s' % args[0]
-             'status': 'NEW',
-         }
-         db['crawl_uris'].insert_one(doc)
-         client.close()
+        client = pymongo.MongoClient(self.settings['MONGO_URI'])
+        db = client[self.settings['MONGO_DB']]
+        doc = {
+            'num_id': args[0],
+            'detail_url': 'https://item.taobao.com/item.htm?id=%s' % args[0],
+            'status': 'NEW',
+        }
+        db['crawl_uris'].insert_one(doc)
+        client.close()
          
