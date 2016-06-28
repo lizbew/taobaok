@@ -61,6 +61,26 @@ class ProductSpider(scrapy.Spider):
         item['subtitle'] = get_contain_text(response.css('.tb-subtitle'))
         item['size_group_name'] = idata_item['sizeGroupName']
         item['attributes_list'] = '\n'.join(response.css('.attributes-list li').xpath('text()').extract())
+
+        # .J_Prop_measurement
+        prop_li = response.css('#J_isku .J_Prop_measurement li')
+        ar = []
+        for li in prop_li:
+            k = li.xpath('@data-value').extract()[0]
+            v = li.css('span').xpath('text()').extract()[0]
+            ar.append('%s|%s' % (k, v))
+        item['prop_measurement'] = '^'.join(ar)
+
+        # .J_Prop_Color
+        prop_li = response.css('#J_isku .J_Prop_Color li')
+        ar = []
+        for li in prop_li:
+            k = li.xpath('@data-value').extract()[0]
+            v = li.css('span').xpath('text()').extract()[0]
+            ar.append('%s|%s' % (k, v))
+        item['prop_color'] = '^'.join(ar)
+
+
         meta = {
             'item': item,
             'sibUrl': 'https:' + var_g_config['sibUrl'] + '&callback=onSibRequestSuccess',
@@ -73,6 +93,7 @@ class ProductSpider(scrapy.Spider):
         item = meta['item']
         if response.status == 200:
             data = parse_jsonp_data(response.body)['data']
+            item['send_city']  = data['deliveryFee']['data']['sendCity']
             delivery_fee = data['deliveryFee']['data']['serviceInfo']['list'][0]
             item['delivery_fee_info'] = delivery_fee['info']
             if 'markInfo' in delivery_fee:

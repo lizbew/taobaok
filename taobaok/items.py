@@ -31,6 +31,9 @@ class ProductItem(scrapy.Item):
     delivery_fee_markinfo = scrapy.Field()
     quantity = scrapy.Field()
     sku_props = scrapy.Field()
+    send_city = scrapy.Field()
+    prop_measurement = scrapy.Field()
+    prop_color = scrapy.Field()
     
 
 
