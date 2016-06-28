@@ -51,7 +51,8 @@ class ProductSpider(scrapy.Spider):
         item = ProductItem()
 
         item['detail_url'] = response.url
-        item['title'] = idata_item['title']
+        #item['title'] = idata_item['title']  # it's string repr like '\\u5B9E\\u62CD2016', need to parse 
+        item['title'] = response.css('#J_Title > .tb-main-title::attr("data-title")').extract()[0]
         item['cid'] = idata_item['cid']
         item['price'] = response.css('#J_StrPrice .tb-rmb-num').xpath('text()').extract()[0]
         item['outer_id'] = item['num_id'] = var_g_config['itemId']
