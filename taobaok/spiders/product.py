@@ -59,7 +59,7 @@ class ProductSpider(scrapy.Spider):
         item['pic'] = idata_item['pic']
         item['auction_images'] = '^'.join(idata_item['auctionImages'])
         item['subtitle'] = get_contain_text(response.css('.tb-subtitle'))
-        item['size_group_name'] = idata_item['sizeGroupName']
+        item['size_group_name'] = idata_item.get('sizeGroupName')
         item['attributes_list'] = '\n'.join(response.css('.attributes-list li').xpath('text()').extract())
 
         # .J_Prop_measurement
@@ -80,11 +80,14 @@ class ProductSpider(scrapy.Spider):
             ar.append('%s|%s' % (k, v))
         item['prop_color'] = '^'.join(ar)
 
+        # skuMap
+        skuMap = response.xpath('//script[contains(., "skuMap")]/text()').re_first(r'skuMap\s*:\s*(.*)')
 
         meta = {
             'item': item,
             'sibUrl': 'https:' + var_g_config['sibUrl'] + '&callback=onSibRequestSuccess',
             'descUrl': 'http:' + var_g_config['descUrl'],
+            'skuMap': skuMap,
         }
         yield scrapy.Request(meta['sibUrl'], callback=self.parse_sib_jsonp, errback=self.errback_sib_jsonp, meta=meta)
 
@@ -98,9 +101,16 @@ class ProductSpider(scrapy.Spider):
             item['delivery_fee_info'] = delivery_fee['info']
             if 'markInfo' in delivery_fee:
                 item['delivery_fee_markinfo'] = delivery_fee['markInfo']
+
             price = data['price']
+            skuMap = json.loads(meta['skuMap']) if meta['skuMap'] else {}
+            def get_sku_price(k):
+                if k in skuMap:
+                    return skuMap[k]['price']
+                return price
+            
             item['quantity'] = data['dynStock']['sellableQuantity']
-            item['sku_props'] = ''.join(['%s:%s::%s' % (price, v['stock'], k[1:])  for k, v in data['dynStock']['sku'].items()])
+            item['sku_props'] = ''.join(['%s:%s::%s' % (get_sku_price(k), v['stock'], k[1:])  for k, v in data['dynStock']['sku'].items()])
         yield scrapy.Request(meta['descUrl'], callback=self.parse_product_description, errback=self.errback_sib_jsonp, meta=meta)
 
     def errback_sib_jsonp(self, failure):
