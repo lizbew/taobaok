@@ -18,7 +18,6 @@ class ProductItem(scrapy.Item):
     description = scrapy.Field()
     cate_props = scrapy.Field()
     picture = scrapy.Field()
-    skui_props = scrapy.Field()
     outer_id = scrapy.Field()
     num_id= scrapy.Field()
     pic = scrapy.Field()
@@ -34,6 +33,11 @@ class ProductItem(scrapy.Item):
     send_city = scrapy.Field()
     prop_measurement = scrapy.Field()
     prop_color = scrapy.Field()
+    input_pids = scrapy.Field()
+    input_values = scrapy.Field()
+    wireless_desc = scrapy.Field()
+
+
     
 
 

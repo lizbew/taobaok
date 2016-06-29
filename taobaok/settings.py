@@ -62,7 +62,9 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, li
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'taobaok.pipelines.SaveProductPipeline': 300,
+    'taobaok.pipelines.MapCatePropsPipeline': 300,
+    'taobaok.pipelines.BuildWapDescPipeline': 310,
+    'taobaok.pipelines.SaveProductPipeline': 400,
     'taobaok.pipelines.UpdateCrawlStatusPipeline': 500,
 }
 
@@ -86,6 +88,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 COMMANDS_MODULE = 'taobaok.commands'
+LOG_LEVEL = 'INFO'
 
 MONGO_URI = 'mongodb://localhost:27017/'
 MONGO_DB = 'taobaok'
